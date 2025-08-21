@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 from proxy_manager import ProxyManager
 from account_manager import AccountManager
+from business_manager import BusinessManager
 
 # Logging ayarları
 logging.basicConfig(
@@ -45,7 +46,7 @@ class ReviewTextGenerator:
             self.model = None
             logging.warning("Gemini API anahtarı bulunamadı. Önceden tanımlı metinler kullanılacak.")
     
-    def generate_review_text(self, business_type="restaurant", rating=5, language="Turkish"):
+    def generate_review_text(self, business_type="restaurant", rating=5, language="Turkish", business_manager=None):
         """Gemini AI ile değerlendirme metni oluşturur"""
         if not self.model:
             return self._get_fallback_review(business_type, rating)
@@ -66,6 +67,12 @@ class ReviewTextGenerator:
             
             business_name = business_prompts.get(business_type, "işletme")
             
+            # İşletme türüne özel AI prompt'larını al
+            ai_prompts = []
+            if business_manager:
+                ai_prompts = business_manager.get_ai_prompts_for_business(business_type)
+            
+            # Prompt oluştur
             prompt = f"""
             {language} dilinde, {business_name} için {rating} yıldızlık bir Google değerlendirme metni yaz.
             
@@ -77,9 +84,13 @@ class ReviewTextGenerator:
             - Sadece {language} dilinde yaz
             - Emoji kullanma
             - Çok resmi olma
-            
-            Örnek ton: Samimi, memnun müşteri
             """
+            
+            # İşletme türüne özel prompt'ları ekle
+            if ai_prompts:
+                prompt += f"\n\nBu {business_name} için şu konulara odaklan: {', '.join(ai_prompts)}"
+            
+            prompt += "\n\nÖrnek ton: Samimi, memnun müşteri"
             
             response = self.model.generate_content(prompt)
             review_text = response.text.strip()
@@ -138,11 +149,11 @@ class ReviewTextGenerator:
         reviews = fallback_reviews.get(business_type, fallback_reviews["service"])
         return random.choice(reviews)
     
-    def generate_multiple_reviews(self, business_type="restaurant", rating=5, count=5, language="Turkish"):
+    def generate_multiple_reviews(self, business_type="restaurant", rating=5, count=5, language="Turkish", business_manager=None):
         """Birden fazla farklı değerlendirme metni oluşturur"""
         reviews = []
         for i in range(count):
-            review = self.generate_review_text(business_type, rating, language)
+            review = self.generate_review_text(business_type, rating, language, business_manager)
             reviews.append(review)
             # API limitlerini aşmamak için kısa bekleme
             if self.model:
@@ -151,7 +162,7 @@ class ReviewTextGenerator:
         return reviews
 
 class GoogleReviewBot:
-    def __init__(self, use_ai_reviews=True, use_proxy_rotation=False, use_account_rotation=True):
+    def __init__(self, use_ai_reviews=True, use_proxy_rotation=False, use_account_rotation=True, use_business_rotation=True):
         """Bot başlatıcı"""
         self.driver = None
         self.wait = None
@@ -159,9 +170,11 @@ class GoogleReviewBot:
         self.use_ai_reviews = use_ai_reviews
         self.use_proxy_rotation = use_proxy_rotation
         self.use_account_rotation = use_account_rotation
+        self.use_business_rotation = use_business_rotation
         self.review_generator = ReviewTextGenerator() if use_ai_reviews else None
         self.proxy_manager = ProxyManager() if use_proxy_rotation else None
         self.account_manager = AccountManager() if use_account_rotation else None
+        self.business_manager = BusinessManager() if use_business_rotation else None
         load_dotenv()
         
     def setup_driver(self):
@@ -407,83 +420,140 @@ class GoogleReviewBot:
             self.driver.quit()
             logging.info("Driver kapatıldı")
     
-    def run_bot(self, business_url, review_text=None, num_reviews=1, business_type="restaurant", google_email=None, google_password=None):
+    def run_bot(self, business_url=None, review_text=None, num_reviews=1, business_type="restaurant", google_email=None, google_password=None, target_businesses=None):
         """Ana bot çalıştırma fonksiyonu"""
         try:
             if not self.setup_driver():
                 return False
             
-            success_count = 0
+            # İşletme yöneticisini başlat
+            if self.use_business_rotation and self.business_manager:
+                if not self.business_manager.load_businesses():
+                    logging.error("❌ İşletme listesi yüklenemedi!")
+                    return False
+                logging.info("✅ İşletme yöneticisi başlatıldı")
             
-            for i in range(num_reviews):
-                logging.info(f"Değerlendirme {i+1}/{num_reviews} başlatılıyor...")
+            success_count = 0
+            total_attempts = 0
+            
+            # Hedef işletme sayısını belirle
+            if target_businesses:
+                max_businesses = target_businesses
+            else:
+                max_businesses = num_reviews
+            
+            for business_index in range(max_businesses):
+                # İşletme seçimi
+                current_business = None
+                current_business_url = business_url
                 
-                # Hesap seçimi
-                current_email = None
-                current_password = None
-                
-                if self.use_account_rotation and self.account_manager:
-                    # Hesap rotasyonu kullan
-                    account = self.account_manager.get_available_account()
-                    if account:
-                        current_email = account['email']
-                        current_password = account['password']
-                        logging.info(f"🔐 Hesap rotasyonu: {current_email}")
+                if self.use_business_rotation and self.business_manager:
+                    # İşletme rotasyonu kullan
+                    current_business = self.business_manager.get_random_business(business_type)
+                    if current_business:
+                        current_business_url = current_business['url']
+                        current_business_type = current_business['type']
+                        current_rating = self.business_manager.generate_random_rating(
+                            business_type=current_business_type,
+                            business_id=current_business['id'] if current_business else None
+                        )
+                        logging.info(f"🏢 İşletme rotasyonu: {current_business['name']} ({current_business_type}) - {current_rating}⭐")
                     else:
-                        logging.error("❌ Kullanılabilir hesap bulunamadı!")
-                        return False
+                        logging.error("❌ Kullanılabilir işletme bulunamadı!")
+                        break
                 else:
-                    # Manuel hesap kullan
-                    current_email = google_email
-                    current_password = google_password
+                    # Manuel işletme kullan
+                    current_business_type = business_type
+                    current_rating = 5
                 
-                # Google hesabına giriş yap
-                if current_email and current_password:
-                    logging.info(f"🔐 Google hesabına giriş yapılıyor: {current_email}")
-                    if not self.login_to_google(current_email, current_password):
-                        logging.error(f"❌ Google girişi başarısız: {current_email}")
+                # Her işletme için değerlendirme sayısı
+                reviews_per_business = min(num_reviews, 3)  # İşletme başına maksimum 3 değerlendirme
+                
+                for review_index in range(reviews_per_business):
+                    total_attempts += 1
+                    logging.info(f"Değerlendirme {total_attempts} - İşletme: {current_business['name'] if current_business else 'Manuel'}")
+                    
+                    # Hesap seçimi
+                    current_email = None
+                    current_password = None
+                    
+                    if self.use_account_rotation and self.account_manager:
+                        # Hesap rotasyonu kullan
+                        account = self.account_manager.get_available_account()
+                        if account:
+                            current_email = account['email']
+                            current_password = account['password']
+                            logging.info(f"🔐 Hesap rotasyonu: {current_email}")
+                        else:
+                            logging.error("❌ Kullanılabilir hesap bulunamadı!")
+                            continue
+                    else:
+                        # Manuel hesap kullan
+                        current_email = google_email
+                        current_password = google_password
+                    
+                    # Google hesabına giriş yap
+                    if current_email and current_password:
+                        logging.info(f"🔐 Google hesabına giriş yapılıyor: {current_email}")
+                        if not self.login_to_google(current_email, current_password):
+                            logging.error(f"❌ Google girişi başarısız: {current_email}")
+                            
+                            # Hesap hatası işaretle
+                            if self.use_account_rotation and self.account_manager:
+                                self.account_manager.mark_account_used(current_email, False)
+                            
+                            continue
+                        
+                        # 2FA kontrolü
+                        self.handle_2fa()
+                    
+                    # AI ile değerlendirme metni oluştur veya kullanıcının verdiği metni kullan
+                    if self.use_ai_reviews and self.review_generator:
+                        current_review_text = self.review_generator.generate_review_text(
+                            business_type=current_business_type, 
+                            rating=current_rating, 
+                            language="Turkish",
+                            business_manager=self.business_manager
+                        )
+                        logging.info(f"AI ile oluşturulan değerlendirme ({current_rating}⭐): {current_review_text[:50]}...")
+                    else:
+                        current_review_text = review_text or "Harika bir deneyimdi! Kesinlikle tavsiye ederim."
+                    
+                    if self.leave_review(current_business_url, current_review_text, current_rating):
+                        success_count += 1
+                        logging.info(f"Değerlendirme {total_attempts} başarıyla tamamlandı")
+                        
+                        # Hesap başarılı kullanım işaretle
+                        if self.use_account_rotation and self.account_manager and current_email:
+                            self.account_manager.mark_account_used(current_email, True)
+                        
+                        # İşletme başarılı kullanım işaretle
+                        if self.use_business_rotation and self.business_manager and current_business:
+                            self.business_manager.mark_business_reviewed(current_business['id'], True)
+                    else:
+                        logging.warning(f"Değerlendirme {total_attempts} başarısız")
                         
                         # Hesap hatası işaretle
-                        if self.use_account_rotation and self.account_manager:
+                        if self.use_account_rotation and self.account_manager and current_email:
                             self.account_manager.mark_account_used(current_email, False)
                         
-                        continue
+                        # İşletme hatası işaretle
+                        if self.use_business_rotation and self.business_manager and current_business:
+                            self.business_manager.mark_business_reviewed(current_business['id'], False)
                     
-                    # 2FA kontrolü
-                    self.handle_2fa()
+                    # Değerlendirmeler arası uzun bekleme
+                    if review_index < reviews_per_business - 1:
+                        wait_time = random.randint(30, 60)
+                        logging.info(f"Sonraki değerlendirme için {wait_time} saniye bekleniyor...")
+                        time.sleep(wait_time)
                 
-                # AI ile değerlendirme metni oluştur veya kullanıcının verdiği metni kullan
-                if self.use_ai_reviews and self.review_generator:
-                    current_review_text = self.review_generator.generate_review_text(
-                        business_type=business_type, 
-                        rating=5, 
-                        language="Turkish"
-                    )
-                    logging.info(f"AI ile oluşturulan değerlendirme: {current_review_text[:50]}...")
-                else:
-                    current_review_text = review_text or "Harika bir deneyimdi! Kesinlikle tavsiye ederim."
-                
-                if self.leave_review(business_url, current_review_text):
-                    success_count += 1
-                    logging.info(f"Değerlendirme {i+1} başarıyla tamamlandı")
-                    
-                    # Hesap başarılı kullanım işaretle
-                    if self.use_account_rotation and self.account_manager and current_email:
-                        self.account_manager.mark_account_used(current_email, True)
-                else:
-                    logging.warning(f"Değerlendirme {i+1} başarısız")
-                    
-                    # Hesap hatası işaretle
-                    if self.use_account_rotation and self.account_manager and current_email:
-                        self.account_manager.mark_account_used(current_email, False)
-                
-                # Değerlendirmeler arası uzun bekleme
-                if i < num_reviews - 1:
-                    wait_time = random.randint(30, 60)
-                    logging.info(f"Sonraki değerlendirme için {wait_time} saniye bekleniyor...")
+                # İşletmeler arası bekleme
+                if business_index < max_businesses - 1:
+                    wait_time = random.randint(60, 120)
+                    logging.info(f"Sonraki işletme için {wait_time} saniye bekleniyor...")
                     time.sleep(wait_time)
             
-            logging.info(f"Toplam {success_count}/{num_reviews} değerlendirme başarıyla tamamlandı")
+            logging.info(f"Toplam {success_count}/{total_attempts} değerlendirme başarıyla tamamlandı")
             return success_count > 0
             
         except Exception as e:
@@ -499,12 +569,29 @@ def main():
     print("🤖 AI DESTEKLİ - SADECE EĞİTİM AMAÇLIDIR!")
     print("=" * 60)
     
-    # Kullanıcıdan bilgi al
-    business_url = input("Google işletme URL'sini girin: ").strip()
+    # İşletme seçimi
+    print("\n🏢 İşletme Seçimi:")
+    print("1. İşletme listesi kullan (önerilen)")
+    print("2. Tek işletme URL'si girin")
     
-    if not business_url:
-        print("Hata: URL gerekli!")
-        return
+    business_choice = input("Seçiminiz (1/2): ").strip()
+    
+    business_url = None
+    target_businesses = None
+    
+    if business_choice == "1":
+        # İşletme listesi kullan
+        print("\n✅ İşletme listesi kullanılacak")
+        target_businesses = int(input("Kaç farklı işletmeye değerlendirme bırakılacak? (1-10): ").strip())
+        if target_businesses < 1 or target_businesses > 10:
+            print("Hata: İşletme sayısı 1-10 arasında olmalı!")
+            return
+    else:
+        # Tek işletme URL'si
+        business_url = input("Google işletme URL'sini girin: ").strip()
+        if not business_url:
+            print("Hata: URL gerekli!")
+            return
     
     # Hesap yönetimi seçeneği
     print("\n🔐 Hesap Yönetimi:")
@@ -586,10 +673,15 @@ def main():
     use_ai = ai_choice == "1"
     use_proxy_rotation = proxy_choice == "3"
     use_account_rotation = account_choice == "1"
-    bot = GoogleReviewBot(use_ai_reviews=use_ai, use_proxy_rotation=use_proxy_rotation, use_account_rotation=use_account_rotation)
+    use_business_rotation = business_choice == "1"
+    bot = GoogleReviewBot(use_ai_reviews=use_ai, use_proxy_rotation=use_proxy_rotation, use_account_rotation=use_account_rotation, use_business_rotation=use_business_rotation)
     
     print(f"\n🤖 Bot başlatılıyor...")
-    print(f"URL: {business_url}")
+    if business_url:
+        print(f"URL: {business_url}")
+    else:
+        print(f"Hedef İşletme Sayısı: {target_businesses}")
+    print(f"İşletme Rotasyonu: {'Evet' if use_business_rotation else 'Hayır'}")
     print(f"Hesap Rotasyonu: {'Evet' if use_account_rotation else 'Hayır'}")
     print(f"AI Kullanımı: {'Evet' if use_ai else 'Hayır'}")
     print(f"Proxy Rotation: {'Evet' if use_proxy_rotation else 'Hayır'}")
@@ -598,6 +690,10 @@ def main():
     else:
         print(f"Değerlendirme: {review_text}")
     print(f"Sayı: {num_reviews}")
+    
+    # İşletme durumunu göster
+    if use_business_rotation and bot.business_manager:
+        bot.business_manager.print_business_status()
     
     # Hesap durumunu göster
     if use_account_rotation and bot.account_manager:
@@ -611,7 +707,7 @@ def main():
         return
     
     # Bot'u çalıştır
-    success = bot.run_bot(business_url, review_text, num_reviews, business_type, google_email, google_password)
+    success = bot.run_bot(business_url, review_text, num_reviews, business_type, google_email, google_password, target_businesses)
     
     if success:
         print("\n✅ Bot başarıyla tamamlandı!")

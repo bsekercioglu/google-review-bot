@@ -6,9 +6,9 @@
 
 Bu bot, Google işletme sayfalarında otomatik olarak 5 yıldız değerlendirme bırakmak için tasarlanmıştır. **Sadece eğitim ve öğrenme amaçlıdır.**
 
-### 🆕 Yeni AI Özelliği
+### 🆕 Yeni Özellikler
 
-Bot artık **Google Gemini AI**, **akıllı proxy yönetimi** ve **hesap rotasyonu** kullanarak gelişmiş özellikler sunar:
+Bot artık **Google Gemini AI**, **akıllı proxy yönetimi**, **hesap rotasyonu** ve **işletme rotasyonu** kullanarak gelişmiş özellikler sunar:
 - 🤖 AI ile otomatik metin oluşturma
 - 📋 10 farklı işletme türü desteği
 - 🌍 Türkçe dil desteği
@@ -21,6 +21,9 @@ Bot artık **Google Gemini AI**, **akıllı proxy yönetimi** ve **hesap rotasyo
 - 📊 **Hesap durumu takibi**
 - ⏳ **Otomatik bekleme süreleri**
 - 🚫 **Banlanmış hesap yönetimi**
+- 🏢 **İşletme rotasyonu ve yönetimi**
+- ⭐ **Akıllı yıldız dağılımı**
+- 📍 **Çoklu işletme desteği**
 
 ## ⚠️ Yasal Uyarı
 
@@ -62,7 +65,8 @@ python google_review_bot.py
 ## Kullanım
 
 1. Bot çalıştırıldığında sizden şu bilgileri isteyecek:
-   - Google işletme URL'si
+   - **İşletme seçimi** (liste veya tek işletme)
+   - Google işletme URL'si (tek işletme seçilirse)
    - **Hesap yönetimi seçeneği** (liste veya tek hesap)
    - **AI kullanımı seçeneği** (yeni!)
    - **Proxy kullanımı seçeneği** (yeni!)
@@ -70,7 +74,11 @@ python google_review_bot.py
    - Değerlendirme metni (AI seçilmezse)
    - Kaç değerlendirme bırakılacağı
 
-2. **Hesap Yönetimi Seçenekleri:**
+2. **İşletme Seçimi Seçenekleri:**
+   - 🏢 **İşletme listesi kullan** (önerilen)
+   - 🔗 **Tek işletme URL'si girin**
+
+3. **Hesap Yönetimi Seçenekleri:**
    - 📋 **Hesap listesi kullan** (önerilen)
    - 🔐 **Tek hesap girişi**
 
@@ -85,16 +93,22 @@ python google_review_bot.py
 
 5. Bot otomatik olarak:
    - Chrome tarayıcısını açar
+   - **İşletme listesinden rastgele işletme seçer** (işletme rotasyonu aktifse)
    - **Hesap listesinden sırayla hesap seçer**
    - **Google hesabına giriş yapar**
    - İşletme sayfasına gider
    - Değerlendirme formunu doldurur
-   - 5 yıldız verir
+   - **İşletme türüne göre rastgele yıldız verir** (3-5 arası)
    - AI ile oluşturulan veya kullanıcının verdiği metni yazar ve gönderir
    - **Hesap kullanımını kaydeder ve rotasyon yapar**
+   - **İşletme kullanımını kaydeder ve rotasyon yapar**
 
 ## Özellikler
 
+- **🏢 Çoklu İşletme Yönetimi**: JSON dosyasından işletme listesi
+- **🔄 İşletme Rotasyonu**: Rastgele işletme seçimi
+- **⭐ Akıllı Yıldız Sistemi**: İşletme türüne göre rastgele yıldız dağılımı
+- **📊 İşletme Durumu Takibi**: Aktif, tamamlanmış, hata durumları
 - **🔐 Çoklu Hesap Yönetimi**: JSON/CSV dosyalarından hesap listesi
 - **🔄 Hesap Rotasyonu**: Otomatik hesap değiştirme
 - **📊 Hesap Durumu Takibi**: Aktif, bekleme, banlanmış durumları

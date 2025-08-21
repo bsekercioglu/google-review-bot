@@ -1,0 +1,209 @@
+{
+  "businesses": [
+    {
+      "id": "biz_001",
+      "name": "Kebapçı Mehmet Usta",
+      "url": "https://www.google.com/maps/place/Kebapçı+Mehmet+Usta/@41.0082,28.9784,17z",
+      "type": "restaurant",
+      "category": "Türk Mutfağı",
+      "location": "İstanbul, Fatih",
+      "max_rating": 5,
+      "min_rating": 4,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "Geleneksel kebap restoranı"
+    },
+    {
+      "id": "biz_002",
+      "name": "Starbucks Coffee",
+      "url": "https://www.google.com/maps/place/Starbucks/@41.0082,28.9784,17z",
+      "type": "cafe",
+      "category": "Kahve Zinciri",
+      "location": "İstanbul, Beşiktaş",
+      "max_rating": 5,
+      "min_rating": 3,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "Uluslararası kahve zinciri"
+    },
+    {
+      "id": "biz_003",
+      "name": "Hilton İstanbul Bosphorus",
+      "url": "https://www.google.com/maps/place/Hilton+Istanbul+Bosphorus/@41.0082,28.9784,17z",
+      "type": "hotel",
+      "category": "Lüks Otel",
+      "location": "İstanbul, Şişli",
+      "max_rating": 5,
+      "min_rating": 4,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "5 yıldızlı lüks otel"
+    },
+    {
+      "id": "biz_004",
+      "name": "LC Waikiki",
+      "url": "https://www.google.com/maps/place/LC+Waikiki/@41.0082,28.9784,17z",
+      "type": "shop",
+      "category": "Giyim Mağazası",
+      "location": "İstanbul, Kadıköy",
+      "max_rating": 5,
+      "min_rating": 3,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "Uluslararası giyim mağazası"
+    },
+    {
+      "id": "biz_005",
+      "name": "Dentist Dr. Ayşe Yılmaz",
+      "url": "https://www.google.com/maps/place/Dentist+Dr+Ayşe+Yılmaz/@41.0082,28.9784,17z",
+      "type": "medical",
+      "category": "Diş Hekimi",
+      "location": "İstanbul, Bakırköy",
+      "max_rating": 5,
+      "min_rating": 4,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "Özel diş kliniği"
+    },
+    {
+      "id": "biz_006",
+      "name": "Beauty Salon Elif",
+      "url": "https://www.google.com/maps/place/Beauty+Salon+Elif/@41.0082,28.9784,17z",
+      "type": "beauty",
+      "category": "Güzellik Salonu",
+      "location": "İstanbul, Üsküdar",
+      "max_rating": 5,
+      "min_rating": 4,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "Kadın güzellik salonu"
+    },
+    {
+      "id": "biz_007",
+      "name": "Fitness Center Power Gym",
+      "url": "https://www.google.com/maps/place/Power+Gym/@41.0082,28.9784,17z",
+      "type": "fitness",
+      "category": "Spor Salonu",
+      "location": "İstanbul, Maltepe",
+      "max_rating": 5,
+      "min_rating": 3,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "Modern spor salonu"
+    },
+    {
+      "id": "biz_008",
+      "name": "English Course ABC",
+      "url": "https://www.google.com/maps/place/ABC+English+Course/@41.0082,28.9784,17z",
+      "type": "education",
+      "category": "Dil Kursu",
+      "location": "İstanbul, Ataşehir",
+      "max_rating": 5,
+      "min_rating": 4,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "İngilizce dil kursu"
+    },
+    {
+      "id": "biz_009",
+      "name": "Pizza Hut",
+      "url": "https://www.google.com/maps/place/Pizza+Hut/@41.0082,28.9784,17z",
+      "type": "restaurant",
+      "category": "Pizza Restoranı",
+      "location": "İstanbul, Beylikdüzü",
+      "max_rating": 5,
+      "min_rating": 3,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "Uluslararası pizza zinciri"
+    },
+    {
+      "id": "biz_010",
+      "name": "Car Wash Express",
+      "url": "https://www.google.com/maps/place/Car+Wash+Express/@41.0082,28.9784,17z",
+      "type": "service",
+      "category": "Oto Yıkama",
+      "location": "İstanbul, Sultangazi",
+      "max_rating": 5,
+      "min_rating": 3,
+      "review_count": 0,
+      "last_review_date": null,
+      "status": "active",
+      "notes": "Otomatik oto yıkama"
+    }
+  ],
+  "settings": {
+    "max_reviews_per_business": 3,
+    "min_delay_between_reviews": 3600,
+    "max_delay_between_reviews": 7200,
+    "cooldown_period_hours": 24,
+    "auto_rating_distribution": {
+      "5_star": 0.6,
+      "4_star": 0.3,
+      "3_star": 0.1
+    },
+    "business_types": {
+      "restaurant": {
+        "max_rating": 5,
+        "min_rating": 3,
+        "ai_prompts": ["yemek kalitesi", "servis hızı", "personel ilgisi", "ortam temizliği"]
+      },
+      "cafe": {
+        "max_rating": 5,
+        "min_rating": 3,
+        "ai_prompts": ["kahve kalitesi", "ortam atmosferi", "tatlı çeşitliliği", "wifi hızı"]
+      },
+      "hotel": {
+        "max_rating": 5,
+        "min_rating": 4,
+        "ai_prompts": ["oda temizliği", "personel hizmeti", "kahvaltı kalitesi", "konum avantajı"]
+      },
+      "shop": {
+        "max_rating": 5,
+        "min_rating": 3,
+        "ai_prompts": ["ürün çeşitliliği", "fiyat uygunluğu", "personel yardımı", "mağaza düzeni"]
+      },
+      "medical": {
+        "max_rating": 5,
+        "min_rating": 4,
+        "ai_prompts": ["doktor uzmanlığı", "hizmet kalitesi", "randevu kolaylığı", "hijyen standartları"]
+      },
+      "beauty": {
+        "max_rating": 5,
+        "min_rating": 4,
+        "ai_prompts": ["hizmet kalitesi", "personel uzmanlığı", "hijyen standartları", "fiyat uygunluğu"]
+      },
+      "fitness": {
+        "max_rating": 5,
+        "min_rating": 3,
+        "ai_prompts": ["ekipman kalitesi", "eğitmen uzmanlığı", "temizlik standartları", "üyelik avantajları"]
+      },
+      "education": {
+        "max_rating": 5,
+        "min_rating": 4,
+        "ai_prompts": ["eğitmen kalitesi", "müfredat içeriği", "sınıf ortamı", "başarı oranları"]
+      },
+      "service": {
+        "max_rating": 5,
+        "min_rating": 3,
+        "ai_prompts": ["hizmet kalitesi", "personel profesyonelliği", "fiyat uygunluğu", "zamanında teslim"]
+      }
+    }
+  },
+  "metadata": {
+    "created_date": "2024-01-15",
+    "version": "1.0",
+    "description": "Google işletme değerlendirme botu için firma listesi",
+    "total_businesses": 10,
+    "last_updated": "2024-01-15T10:00:00Z"
+  }
+}
