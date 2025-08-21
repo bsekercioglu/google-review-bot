@@ -1,0 +1,34 @@
+{
+  "accounts": [
+    {
+      "email": "ornek1@gmail.com",
+      "password": "sifre123",
+      "status": "active",
+      "last_used": "",
+      "review_count": 0,
+      "notes": "Örnek hesap 1 - Test için kullanın"
+    },
+    {
+      "email": "ornek2@gmail.com",
+      "password": "sifre456", 
+      "status": "active",
+      "last_used": "",
+      "review_count": 0,
+      "notes": "Örnek hesap 2 - Test için kullanın"
+    },
+    {
+      "email": "ornek3@gmail.com",
+      "password": "sifre789",
+      "status": "active", 
+      "last_used": "",
+      "review_count": 0,
+      "notes": "Örnek hesap 3 - Test için kullanın"
+    }
+  ],
+  "stats": {
+    "total_accounts": 3,
+    "active_accounts": 3,
+    "total_reviews": 0
+  },
+  "last_updated": "2024-01-01T00:00:00"
+}

@@ -1,0 +1,4 @@
+email,password,status,last_used,review_count,notes
+ornek1@gmail.com,sifre123,active,,0,Örnek hesap 1 - Test için kullanın
+ornek2@gmail.com,sifre456,active,,0,Örnek hesap 2 - Test için kullanın
+ornek3@gmail.com,sifre789,active,,0,Örnek hesap 3 - Test için kullanın
